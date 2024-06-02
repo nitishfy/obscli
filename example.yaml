@@ -6,39 +6,12 @@ projects:
     description: Official Kubernetes package repositories sponsored by OpenBuildService
     url: https://kubernetes.io
     persons:
-      - userid: cpanato
+      - userid: user1
         role: bugowner
-      - userid: jrrickard
+      - userid: user2
         role: bugowner
-      - userid: xmudrii
+      - userid: user3
         role: bugowner
-    repositories:
-      - name:
-        architectures:
-          -
-        releaseTargets:
-          - project:
-            repository:
-            trigger:
-        path:
-          - project:
-            repository:
-    build:
-      disable: {}
-    publish:
-      disable: {}
-    debuginfo:
-      disable: {}
-    userforbuild:
-      disable: {}
-    packages:
-      - name:
-        title:
-        project:
-        description:
-        devel:
-          project:
-          package:
     subprojects:
       - name: "isv:kubernetes:addons"
         rootProject: "isv:kubernetes"
@@ -46,9 +19,9 @@ projects:
         description: Various projects that are used in addition to the core packages hosted in "isv:kubernetes:core"
         url:
         persons:
-          - userid: sagrunert
+          - userid: user1
             role: bugowner
-          - userid: xmudrii
+          - userid: user2
             role: bugowner
         subprojects: # subproject having a subproject
           - name: "isv:kubernetes:addons:cri-o"
@@ -57,18 +30,10 @@ projects:
             description: This is an umbrella project that hosts CRI-O packages. This umbrella project contains a subproject for each release type (currently stable and prerelease).
             url: https://cri-o.io
             persons:
-              - userid: xmudrii
+              - userid: user1
                 role: bugowner
-              - userid: xmudrii
+              - userid: user2
                 role: maintainer
-            build:
-              disable: {}
-            publish:
-              disable: {}
-            debuginfo:
-              disable: {}
-            userforbuild:
-              disable: {}
             subprojects:
               - name: "isv:kubernetes:addons:cri-o:stable"
                 rootProject: "isv:kubernetes:addons:cri-o"
@@ -76,16 +41,8 @@ projects:
                 description: This is an umbrella project that hosts stable versions of CRI-O. This project contains a subproject for each minor release.
                 url: https://cri-o.io
                 persons:
-                  - userid: sagrunert
+                  - userid: user1
                     role: maintainer
-                build:
-                  disable: {}
-                publish:
-                  disable: {}
-                debuginfo:
-                  disable: {}
-                userforbuild:
-                  disable: {}
                 subprojects:
                   - name: "isv:kubernetes:addons:cri-o:stable:v1.31"
                     rootProject: "isv:kubernetes:addons:cri-o:stable"
@@ -93,7 +50,7 @@ projects:
                     description: Project/repository hosting packages for stable versions of CRI-O v1.31.
                     url: https://cri-o.io
                     persons:
-                      - userid: sagrunert
+                      - userid: user1
                         role: maintainer
                     repositories:
                       - name: rpm
