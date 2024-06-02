@@ -10,19 +10,32 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package types
+package cmd
 
 import (
-	"sigs.k8s.io/release-sdk/obs"
+	"fmt"
+	"os"
+
+	"github.com/spf13/cobra"
 )
 
-type Projects struct {
-	Projects []Project `json:"projects"`
+var rootCmd = &cobra.Command{
+	Use:   "obscli",
+	Short: "Command-line interface for managing OpenBuildService (OBS) assets",
+	Long: `obscli is a Comman-line interface that is used to manage the Kubernetes packages
+	hosted on the OpenBuildService (OBS) Platform.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("root command function called")
+	},
 }
 
-type Project struct {
-	obs.Project
-	RootProject string        `json:"rootProject,omitempty"`
-	Packages    []obs.Package `json:"packages,omitempty"`
-	Subprojects []Project     `json:"subprojects,omitempty"`
+func Execute() {
+	err := rootCmd.Execute()
+	if err != nil {
+		os.Exit(1)
+	}
+}
+
+func init() {
+	rootCmd.AddCommand(Reconcile())
 }
