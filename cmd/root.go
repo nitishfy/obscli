@@ -17,8 +17,7 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-	"os"
+	"log"
 
 	"github.com/spf13/cobra"
 )
@@ -27,15 +26,15 @@ var rootCmd = &cobra.Command{
 	Use:   "obscli",
 	Short: "Command-line interface for managing OpenBuildService (OBS) assets",
 	Long: `obscli is a command-line interface for managing the packages hosted on the OpenBuildService (OBS) platform.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("root command function called")
+	RunE: func(cmd *cobra.Command, _ []string) error {
+		return cmd.Help()
 	},
 }
 
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
-		os.Exit(1)
+		log.Fatal()
 	}
 }
 
