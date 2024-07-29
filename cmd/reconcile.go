@@ -1,8 +1,12 @@
 /*
 Copyright 2024 The Kubernetes Authors.
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
-You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -46,38 +50,39 @@ func Reconcile() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "reconcile",
-		Short: "reconcile command for Paketo",
-		Run: func(cmd *cobra.Command, args []string) {
+		Short: "reconcile projects, users, and packages on the OBS platform",
+		RunE: func(cmd *cobra.Command, args []string) error {
 			cred, err := GetOBSCredentials(apiURL)
 			if err != nil {
-				log.Fatalf("Error getting OBS credentials: %v\n", err)
+				return fmt.Errorf("error getting OBS credentials: %w", err)
 			}
 
 			opts.OBSClient = cred.OBSClient
 
-			opts.ManifestPath, _ = cmd.Flags().GetString("manifest")
+			opts.ManifestPath, err = cmd.Flags().GetString("manifest")
+			if err != nil {
+                return err
+            }
 			if !opts.CheckManifestPath() {
-				fmt.Printf("%s does not exist\n", opts.ManifestPath)
-				return
+				return fmt.Errorf("%s does not exist\n", opts.ManifestPath)
 			}
 
 			prjs, err := LoadManifest(opts.ManifestPath)
 			if err != nil {
-				fmt.Printf("%v\n", err)
-				return
+				return fmt.Errorf("loading manifest: %w\n", err)
 			}
 
 			for _, prj := range prjs.Projects {
 				remotePrj, err := opts.OBSClient.GetProjectMetaFile(context.Background(), prj.Name)
 				if err != nil {
-					fmt.Printf("error getting project from OBS: %v\n", err)
+					log.Printf("error getting project from OBS: %v\n", err)
 					continue
 				}
 
 				if different := compareProjects(prj, remotePrj); different {
 					err := opts.OBSClient.CreateUpdateProject(context.Background(), &prj.Project)
 					if err != nil {
-						fmt.Printf("error creating/updating project on OBS: %v\n", err)
+						log.Printf("error creating/updating project on OBS: %v\n", err)
 					} else {
 						fmt.Printf("Project %s updated on OBS.\n", prj.Name)
 					}
@@ -85,10 +90,11 @@ func Reconcile() *cobra.Command {
 					fmt.Printf("Project %s is already up-to-date.\n", prj.Name)
 				}
 			}
+			return nil
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.ManifestPath, "manifest", "m", "", "Specify the path to read the example manifest")
+	cmd.Flags().StringVarP(&opts.ManifestPath, "manifest", "m", "", "Specify the path to read the manifest")
 	cmd.MarkFlagRequired("manifest")
 	cmd.Flags().StringVar(&apiURL, "api-url", DefaultAPIURL, "The base URL for the API")
 
@@ -178,19 +184,23 @@ func GetOBSCredentials(apiURL string) (*Info, error) {
 }
 
 func (o *Options) CheckManifestPath() bool {
-	_, err := os.Stat(o.ManifestPath)
-	return err == nil
+	info, err := os.Stat(o.ManifestPath)
+	if err != nil {
+		return false
+	}
+
+	return !info.IsDir()
 }
 
 func LoadManifest(path string) (*types.Projects, error) {
 	bytes, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("unable to read the manifest content: %v", err)
+		return nil, fmt.Errorf("reading the manifest file: %v", err)
 	}
 
 	var prjs types.Projects
 	if err := yaml.Unmarshal(bytes, &prjs); err != nil {
-		return nil, fmt.Errorf("error unmarshalling yaml: %v", err)
+		return nil, fmt.Errorf("unmarshalling the manifest yaml: %v", err)
 	}
 
 	return &prjs, nil
